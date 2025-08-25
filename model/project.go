@@ -45,3 +45,7 @@ type Project struct {
 
 	Organization *Organization `gorm:"foreignKey:OrganizationID" json:"organization"`
 }
+
+func (Project) TableName() string {
+	return "projects"
+}

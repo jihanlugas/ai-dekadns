@@ -11,12 +11,11 @@ type Repository interface {
 }
 
 type repository struct {
-	coreDb *gorm.DB
-	sslDb  *gorm.DB
+	db *gorm.DB
 }
 
 func (r repository) GetById(id string, preloads ...string) (ust model.User, err error) {
-	conn := r.coreDb
+	conn := r.db
 
 	for _, preload := range preloads {
 		conn = conn.Preload(preload)
@@ -26,9 +25,8 @@ func (r repository) GetById(id string, preloads ...string) (ust model.User, err 
 	return ust, err
 }
 
-func NewRepository(coreDb *gorm.DB, sslDb *gorm.DB) Repository {
+func NewRepository(db *gorm.DB) Repository {
 	return &repository{
-		coreDb: coreDb,
-		sslDb:  sslDb,
+		db: db,
 	}
 }

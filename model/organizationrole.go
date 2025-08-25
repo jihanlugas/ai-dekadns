@@ -70,3 +70,7 @@ func (d Privilages) Value() (driver.Value, error) {
 	val, err := json.Marshal(d)
 	return string(val), err
 }
+
+func (OrganizationRole) TableName() string {
+	return "organization_roles"
+}

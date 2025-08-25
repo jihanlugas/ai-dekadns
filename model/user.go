@@ -54,3 +54,7 @@ type Role struct {
 	UpdatedAt time.Time      `gorm:"not null" json:"updated_at"`
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"deleted_at,omitempty" json:"deleted_at"`
 }
+
+func (User) TableName() string {
+	return "users"
+}

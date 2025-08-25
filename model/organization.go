@@ -43,3 +43,7 @@ type Organization struct {
 	ExcludeReportTopups        bool           `json:"exclude_report_topups"`
 	ClusterType                string         `gorm:"not null;default:'shared'" json:"cluster_type"`
 }
+
+func (Organization) TableName() string {
+	return "organizations"
+}

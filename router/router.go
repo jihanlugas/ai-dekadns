@@ -1,6 +1,11 @@
 package router
 
 import (
+	"ai-dekadns/app/dns"
+	"ai-dekadns/app/organization"
+	"ai-dekadns/app/project"
+	"ai-dekadns/app/superadminrole"
+	"ai-dekadns/app/user"
 	"ai-dekadns/middleware"
 	"net/http"
 
@@ -16,17 +21,17 @@ func init() {
 
 func Setup(c *gin.Engine, db *gorm.DB) {
 	// Repository
-	//sslRepository := ssl.NewRepository(coreDb, sslDb)
-	//organizationRepository := organization.NewRepository(coreDb, sslDb)
-	//projectRepository := project.NewRepository(coreDb, sslDb)
-	//userRepository := user.NewRepository(coreDb, sslDb)
-	//superadminroleRepository := superadminrole.NewRepository(coreDb, sslDb)
+	dnsRepository := dns.NewRepository(db)
+	organizationRepository := organization.NewRepository(db)
+	projectRepository := project.NewRepository(db)
+	userRepository := user.NewRepository(db)
+	superadminroleRepository := superadminrole.NewRepository(db)
 
-	//// Usecase
-	//sslUsecase := ssl.NewUsecase(sslRepository, organizationRepository, projectRepository, userRepository, superadminroleRepository)
-	//
-	//// Handler
-	//sslHandler := ssl.NewHandler(sslUsecase)
+	// Usecase
+	dnsUsecase := dns.NewUsecase(dnsRepository, organizationRepository, projectRepository, userRepository, superadminroleRepository)
+
+	// Handler
+	dnsHandler := dns.NewHandler(dnsUsecase)
 
 	router := c
 
@@ -34,7 +39,6 @@ func Setup(c *gin.Engine, db *gorm.DB) {
 		c.String(http.StatusOK, "Ok")
 	})
 
-	//router.GET("/", middleware.AuthorizeJWT(jwtService), sslHandler.Page)
-	//router.POST("/import", middleware.AuthorizeJWT(jwtService), sslHandler.ImportSSL)
+	router.POST("", middleware.AuthorizeJWT(jwtService), dnsHandler.Create)
 
 }

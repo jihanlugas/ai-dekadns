@@ -11,19 +11,17 @@ type Repository interface {
 }
 
 type repository struct {
-	coreDb *gorm.DB
-	sslDb  *gorm.DB
+	db *gorm.DB
 }
 
 func (r repository) GetBySuperadminId(id string) (rolePrivilege []model.SuperAdminRoles, err error) {
-	conn := r.coreDb
+	conn := r.db
 	return rolePrivilege, conn.Joins("JOIN super_admin_role_mapping srm ON srm.id_role = super_admin_roles.id").
 		Where("srm.id_admin = ?", id).Find(&rolePrivilege).Error
 }
 
-func NewRepository(coreDb *gorm.DB, sslDb *gorm.DB) Repository {
+func NewRepository(db *gorm.DB) Repository {
 	return &repository{
-		coreDb: coreDb,
-		sslDb:  sslDb,
+		db: db,
 	}
 }

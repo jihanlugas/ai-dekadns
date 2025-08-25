@@ -71,3 +71,7 @@ func (s *SuperAdminRoles) CheckForPrivilege(privilegeName string, requireEditorA
 
 	return false
 }
+
+func (SuperAdminRoles) TableName() string {
+	return "superadminroles"
+}

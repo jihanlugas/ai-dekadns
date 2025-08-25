@@ -11,19 +11,17 @@ type Repository interface {
 }
 
 type repository struct {
-	coreDb *gorm.DB
-	sslDb  *gorm.DB
+	db *gorm.DB
 }
 
 func (r repository) GetById(id string) (proj model.Project, err error) {
-	conn := r.coreDb
+	conn := r.db
 	err = conn.Where("id = ?", id).First(&proj).Error
 	return proj, err
 }
 
-func NewRepository(coreDb *gorm.DB, sslDb *gorm.DB) Repository {
+func NewRepository(db *gorm.DB) Repository {
 	return &repository{
-		coreDb: coreDb,
-		sslDb:  sslDb,
+		db: db,
 	}
 }
