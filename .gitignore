@@ -1,0 +1,13 @@
+*.iml
+.idea/
+.vscode/
+.DS_Store
+.env
+.env-dev2
+.env-development
+.env-prod
+.env-production
+.env-staging
+*.log
+gin-bin
+storage
