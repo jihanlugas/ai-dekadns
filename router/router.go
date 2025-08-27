@@ -4,8 +4,10 @@ import (
 	"ai-dekadns/app/dns"
 	"ai-dekadns/app/organization"
 	"ai-dekadns/app/project"
+	"ai-dekadns/app/record"
 	"ai-dekadns/app/superadminrole"
 	"ai-dekadns/app/user"
+	"ai-dekadns/app/zone"
 	"ai-dekadns/middleware"
 	"net/http"
 
@@ -26,9 +28,11 @@ func Setup(c *gin.Engine, db *gorm.DB) {
 	projectRepository := project.NewRepository(db)
 	userRepository := user.NewRepository(db)
 	superadminroleRepository := superadminrole.NewRepository(db)
+	zoneRepository := zone.NewRepository(db)
+	recordRepository := record.NewRepository(db)
 
 	// Usecase
-	dnsUsecase := dns.NewUsecase(dnsRepository, organizationRepository, projectRepository, userRepository, superadminroleRepository)
+	dnsUsecase := dns.NewUsecase(dnsRepository, organizationRepository, projectRepository, userRepository, superadminroleRepository, zoneRepository, recordRepository)
 
 	// Handler
 	dnsHandler := dns.NewHandler(dnsUsecase)

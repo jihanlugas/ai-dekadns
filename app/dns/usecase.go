@@ -3,16 +3,20 @@ package dns
 import (
 	"ai-dekadns/app/organization"
 	"ai-dekadns/app/project"
+	"ai-dekadns/app/record"
 	"ai-dekadns/app/superadminrole"
 	"ai-dekadns/app/user"
+	"ai-dekadns/app/zone"
 	"ai-dekadns/constant"
 	"ai-dekadns/helper"
+	"ai-dekadns/model"
 	"ai-dekadns/request"
 	"errors"
 	"os"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joeig/go-powerdns/v3"
+	"github.com/lib/pq"
 )
 
 type Usecase interface {
@@ -25,6 +29,8 @@ type usecase struct {
 	projectRepo        project.Repository
 	userRepo           user.Repository
 	superadminroleRepo superadminrole.Repository
+	zoneRepo           zone.Repository
+	recordRepo         record.Repository
 }
 
 func (u usecase) Create(c *gin.Context, req request.CreateDns) (err error) {
@@ -78,12 +84,80 @@ func (u usecase) Create(c *gin.Context, req request.CreateDns) (err error) {
 		}
 	}
 
-	//pdns1 := powerdns.NewClient((os.Getenv("DNS_HOST")), "localhost", map[string]string{"X-API-Key": (os.Getenv("DNS_API_KEY_VALUE"))}, nil)
-	pdns1 := powerdns.New(os.Getenv("DNS_HOST"), "localhost", powerdns.WithHeaders(map[string]string{
+	// todo check dns is duplicate
+
+	pdns := powerdns.New(os.Getenv("DNS_HOST"), "localhost", powerdns.WithHeaders(map[string]string{
 		"X-API-Key": os.Getenv("DNS_API_KEY_VALUE"),
 	}))
 
-	_, err = pdns1.Zones.AddMaster(c, req.Name+".", false, "d", false, "d", "d", false, []string{"ns3.cloudeka.id.", "ns4.cloudeka.id."})
+	_, err = pdns.Zones.AddMaster(c, req.Name+".", false, "d", false, "d", "d", false, []string{"ns3.cloudeka.id.", "ns4.cloudeka.id."})
+	if err != nil {
+		return err
+	}
+
+	err = pdns.Records.Add(c, req.Name, req.Name, powerdns.RRTypeNS, 30, []string{"ns3.cloudeka.id.", "ns4.cloudeka.id."})
+	if err != nil {
+		return err
+	}
+
+	// todo insert table zone
+	tZone := model.Zone{
+		ID:             helper.GetUniqueID(),
+		OrganizationId: orgId,
+		ProjectId:      projectId,
+		Name:           req.Name,
+		Status:         "",
+		IsCustomNs:     false,
+		IsDnssec:       "",
+		CreatedBy:      userId,
+		UpdatedBy:      userId,
+	}
+
+	// todo get status and IsCustomNs
+
+	err = u.zoneRepo.Create(tZone)
+	if err != nil {
+		return err
+	}
+
+	// todo insert table record
+	tRecord1 := model.Record{
+		ID:            helper.GetUniqueID(),
+		ZoneId:        tZone.ID,
+		TypeId:        "NS",
+		Status:        false,
+		Cache:         false,
+		Name:          tZone.Name,
+		Content:       pq.StringArray{"ns3.cloudeka.id."},
+		TTL:           30,
+		IsHidden:      false,
+		PricePerMonth: 0,
+		PricePerHour:  0,
+		CreatedBy:     userId,
+		UpdatedBy:     userId,
+	}
+	err = u.recordRepo.Create(tRecord1)
+	if err != nil {
+		return err
+	}
+
+	tRecord2 := model.Record{
+		ID:            helper.GetUniqueID(),
+		ZoneId:        tZone.ID,
+		TypeId:        "NS",
+		Status:        false,
+		Cache:         false,
+		Name:          tZone.Name,
+		Content:       pq.StringArray{"ns4.cloudeka.id."},
+		TTL:           30,
+		IsHidden:      false,
+		PricePerMonth: 0,
+		PricePerHour:  0,
+		CreatedBy:     userId,
+		UpdatedBy:     userId,
+	}
+
+	err = u.recordRepo.Create(tRecord2)
 	if err != nil {
 		return err
 	}
@@ -92,12 +166,14 @@ func (u usecase) Create(c *gin.Context, req request.CreateDns) (err error) {
 	return err
 }
 
-func NewUsecase(dnsRepo Repository, organizationRepo organization.Repository, projectRepo project.Repository, userRepo user.Repository, superadminroleRepo superadminrole.Repository) Usecase {
+func NewUsecase(dnsRepo Repository, organizationRepo organization.Repository, projectRepo project.Repository, userRepo user.Repository, superadminroleRepo superadminrole.Repository, zoneRepo zone.Repository, recordRepo record.Repository) Usecase {
 	return &usecase{
 		dnsRepo:            dnsRepo,
 		organizationRepo:   organizationRepo,
 		projectRepo:        projectRepo,
 		userRepo:           userRepo,
 		superadminroleRepo: superadminroleRepo,
+		zoneRepo:           zoneRepo,
+		recordRepo:         recordRepo,
 	}
 }

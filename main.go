@@ -23,6 +23,18 @@ func main() {
 	db := database.GetCorePostsqlConn()
 	elastic := database.GetElasticConn()
 
+	dbEvent := os.Getenv("DB_EVENT")
+	if dbEvent == "rollback_migrate" || dbEvent == "rollback" {
+		database.RunRollback()
+	}
+	if dbEvent == "migrate_only" {
+		database.RunMigration()
+	}
+	if dbEvent == "migrate" || dbEvent == "rollback_migrate" {
+		database.RunMigration()
+		database.SeedTypes()
+	}
+
 	r := gin.Default()
 
 	r.Use(middleware.LoggerToElastic(elastic))
@@ -31,7 +43,8 @@ func main() {
 	router.Setup(r, db)
 
 	// server
-	if err := r.Run(fmt.Sprintf(":%s", os.Getenv("PORT"))); err != nil {
+	err = r.Run(fmt.Sprintf(":%s", os.Getenv("PORT")))
+	if err != nil {
 		log.Println(err)
 	}
 

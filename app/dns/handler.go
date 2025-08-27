@@ -51,6 +51,13 @@ func (h Handler) Create(c *gin.Context) {
 		return
 	}
 
+	err = h.usecase.Create(c, *req)
+	if err != nil {
+		response := helper.CreateResponseStatus(ctxMessage, "002", err.Error())
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
 	response := &model.Response{
 		Status:     true,
 		StatusCode: 200,

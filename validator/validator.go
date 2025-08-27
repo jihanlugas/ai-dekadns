@@ -11,10 +11,12 @@ import (
 var Validator *validator.Validate
 var regxSpecialChar *regexp.Regexp
 var regxXss *regexp.Regexp
+var regDomain *regexp.Regexp
 
 func init() {
 	regxSpecialChar = regexp.MustCompile(`^[a-zA-Z0-9\s_.-]+$`)
 	regxXss = regexp.MustCompile(`^[a-zA-Z0-9\s.,@+_=:/-]+$`)
+	regDomain = regexp.MustCompile(`^(?:[a-zA-Z0-9](?:[a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$`)
 
 	// init validator
 	Validator = validator.New()
@@ -23,6 +25,7 @@ func init() {
 	_ = Validator.RegisterValidation("specialchar", specialchar)
 	_ = Validator.RegisterValidation("xss_clean", xssClean)
 	_ = Validator.RegisterValidation("passwdComplex", checkPasswordComplexity)
+	_ = Validator.RegisterValidation("domain", checkDomain)
 }
 
 func specialchar(fl validator.FieldLevel) bool {
@@ -85,6 +88,8 @@ func MapValidationErrors(err error) map[string]string {
 				errors[e.Field()] = fmt.Sprintf("field special character not allowed")
 			case "passwdComplex":
 				errors[e.Field()] = "Your password is not secure. Please try again with a stronger one."
+			case "domain":
+				errors[e.Field()] = "field must be domain format"
 
 			// Add cases for additional tags as needed
 			default:
@@ -118,4 +123,9 @@ func checkPasswordComplexity(fl validator.FieldLevel) bool {
 		}
 	}
 	return false
+}
+
+func checkDomain(fl validator.FieldLevel) bool {
+	domain := fl.Field().String()
+	return regDomain.MatchString(domain)
 }

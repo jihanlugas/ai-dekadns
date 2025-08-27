@@ -3,6 +3,8 @@ package helper
 import (
 	"errors"
 	"strings"
+
+	"github.com/google/uuid"
 )
 
 func AllowedKey(data map[string]interface{}, allowedList []string) error {
@@ -36,4 +38,9 @@ func GetTextBetween(value string, a string, b string) string {
 		return ""
 	}
 	return value[posFirstAdjusted:posLast]
+}
+
+func GetUniqueID() string {
+	uuid := uuid.New().String()
+	return uuid
 }
