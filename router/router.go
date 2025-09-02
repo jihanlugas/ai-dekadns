@@ -1,11 +1,11 @@
 package router
 
 import (
-	"ai-dekadns/app/dns"
 	"ai-dekadns/app/organization"
 	"ai-dekadns/app/project"
 	"ai-dekadns/app/record"
 	"ai-dekadns/app/superadminrole"
+	"ai-dekadns/app/types"
 	"ai-dekadns/app/user"
 	"ai-dekadns/app/zone"
 	"ai-dekadns/middleware"
@@ -23,19 +23,22 @@ func init() {
 
 func Setup(c *gin.Engine, db *gorm.DB) {
 	// Repository
-	dnsRepository := dns.NewRepository(db)
 	organizationRepository := organization.NewRepository(db)
 	projectRepository := project.NewRepository(db)
 	userRepository := user.NewRepository(db)
 	superadminroleRepository := superadminrole.NewRepository(db)
 	zoneRepository := zone.NewRepository(db)
-	recordRepository := record.NewRepository(db)
+	typesRepository := types.NewRepository(db)
 
 	// Usecase
-	dnsUsecase := dns.NewUsecase(dnsRepository, organizationRepository, projectRepository, userRepository, superadminroleRepository, zoneRepository, recordRepository)
+	zoneUsecase := zone.NewUsecase(organizationRepository, projectRepository, userRepository, superadminroleRepository, zoneRepository)
+	recordUsecase := record.NewUsecase(organizationRepository, projectRepository, userRepository, superadminroleRepository, zoneRepository)
+	typesUsecase := types.NewUsecase(typesRepository)
 
 	// Handler
-	dnsHandler := dns.NewHandler(dnsUsecase)
+	zoneHandler := zone.NewHandler(zoneUsecase)
+	recordHandler := record.NewHandler(recordUsecase)
+	typesHandler := types.NewHandler(typesUsecase)
 
 	router := c
 
@@ -43,6 +46,18 @@ func Setup(c *gin.Engine, db *gorm.DB) {
 		c.String(http.StatusOK, "Ok")
 	})
 
-	router.POST("", middleware.AuthorizeJWT(jwtService), dnsHandler.Create)
+	zoneRouter := router.Group("/zone")
+	zoneRouter.GET("", middleware.AuthorizeJWT(jwtService), zoneHandler.Page)
+	zoneRouter.POST("", middleware.AuthorizeJWT(jwtService), zoneHandler.Create)
+	zoneRouter.GET("/:id", middleware.AuthorizeJWT(jwtService), zoneHandler.GetById)
+	zoneRouter.DELETE("/:id", middleware.AuthorizeJWT(jwtService), zoneHandler.Delete)
+
+	recordRouter := router.Group("/record")
+	recordRouter.POST("", middleware.AuthorizeJWT(jwtService), recordHandler.Create)
+	recordRouter.PUT("", middleware.AuthorizeJWT(jwtService), recordHandler.Update)
+	recordRouter.DELETE("", middleware.AuthorizeJWT(jwtService), recordHandler.Delete)
+
+	typesRouter := router.Group("/types")
+	typesRouter.GET("", middleware.AuthorizeJWT(jwtService), typesHandler.Page)
 
 }

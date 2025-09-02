@@ -19,11 +19,6 @@ func RunMigration() {
 		log.Fatal(err)
 	}
 
-	err = db.Migrator().AutoMigrate(&model.Record{})
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	err = db.Migrator().AutoMigrate(&model.Type{})
 	if err != nil {
 		log.Fatal(err)
@@ -35,11 +30,6 @@ func RunRollback() {
 	db := GetCorePostsqlConn()
 
 	err = db.Migrator().DropTable(&model.Zone{})
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	err = db.Migrator().DropTable(&model.Record{})
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -5,9 +5,9 @@ const (
 )
 
 const (
-	PrivilegeSsl = "SSL"
+	PrivilegeDns = "SSL"
 )
 
 const (
-	SuperadminPrivilegeSsl = "SSL"
+	SuperadminPrivilegeDns = "SSL"
 )

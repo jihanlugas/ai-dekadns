@@ -1,4 +1,4 @@
-package dns
+package types
 
 import (
 	"ai-dekadns/helper"
@@ -19,12 +19,12 @@ func NewHandler(usecase Usecase) Handler {
 	return Handler{usecase: usecase}
 }
 
-func (h Handler) Create(c *gin.Context) {
+func (h Handler) Page(c *gin.Context) {
 	var err error
 
-	ctxMessage := "Create DNS"
+	ctxMessage := "Page Type"
 
-	req := new(request.CreateDns)
+	req := new(request.PageType)
 
 	err = c.Bind(req)
 	if err != nil {
@@ -51,7 +51,7 @@ func (h Handler) Create(c *gin.Context) {
 		return
 	}
 
-	err = h.usecase.Create(c, *req)
+	result, err := h.usecase.Page(c, *req)
 	if err != nil {
 		response := helper.CreateResponseStatus(ctxMessage, "002", err.Error())
 		c.JSON(http.StatusBadRequest, response)
@@ -61,8 +61,10 @@ func (h Handler) Create(c *gin.Context) {
 	response := &model.Response{
 		Status:     true,
 		StatusCode: 200,
-		Message:    "Success Create DNS",
+		Message:    "Success Get Type",
+		Data:       result,
 	}
 
 	c.JSON(http.StatusOK, response)
+
 }

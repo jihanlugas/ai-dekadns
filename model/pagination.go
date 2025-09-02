@@ -14,9 +14,12 @@ func (p *Pagination) GetOffset() int {
 }
 
 func (p *Pagination) GetLimit() int {
-	if p.Limit <= 0 {
+	if p.Limit == 0 {
 		p.Limit = 10
+	} else if p.Limit < 0 {
+		p.Limit = 100
 	}
+
 	return p.Limit
 }
 

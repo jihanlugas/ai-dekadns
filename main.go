@@ -9,16 +9,15 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
 )
 
 func main() {
 	var err error
 
-	err = godotenv.Load()
-	if err != nil {
-		log.Fatalf("Error getting env, %v", err)
-	}
+	//err = godotenv.Load()
+	//if err != nil {
+	//	log.Fatalf("Error getting env, %v", err)
+	//}
 
 	db := database.GetCorePostsqlConn()
 	elastic := database.GetElasticConn()
